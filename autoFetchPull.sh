@@ -11,12 +11,6 @@ else
 
     git pull
 
-    sleep 5
+    sleep 3
     screen -S gradio -dm sh startGradio.sh
-    sleep 1
-    echo gradio is running
-
-    screen -S vite -dm sh startVite.sh
-    sleep 1
-    echo vite is running
 fi
