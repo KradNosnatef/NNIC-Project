@@ -14,7 +14,9 @@ do
         git pull
 
         sleep 3
+        screen -S vite -dm sh startVite.sh
         screen -S gradio -dm sh startGradio.sh
+
     fi
 
     sleep 30
