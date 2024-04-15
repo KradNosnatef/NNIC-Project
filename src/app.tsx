@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { GoogleMap } from '@react-google-maps/api';
 import queryString from "query-string"
 import Poly from './googlemaps';
+import { useGoogleMap } from '@react-google-maps/api';
 
 import {
     APIProvider,
@@ -37,6 +38,10 @@ export default function App() {
 }
 
 function Directions() {
+  
+  const [isOpen, setIsOpen] = useState(false)
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
+  const [polylines, setPolylines] = useState([]);
   var tester=queryString.parse(window.location.search);
   let origin, destination;
 
@@ -67,7 +72,6 @@ function Directions() {
   const selected = routes[routeIndex];
   const leg = selected?.legs[0];
 
-
   useEffect(() => {
     if (!routesLibrary || !map) return;
     setDirectionsService(new routesLibrary.DirectionsService());
@@ -96,23 +100,59 @@ function Directions() {
     directionsRenderer.setRouteIndex(routeIndex);
   }, [routeIndex, directionsRenderer])
   
-  if (!leg) return null;
+  const polylinePath = [
+    {path:[
+    { lat: 1.350438529, lng: 103.6944089 },
+    { lat: 1.29779483, lng: 103.8986301 },], color: '#FF0000'},
+    {path:[ 
+    {lat: 1.29779483, lng: 103.8986301},
+    { lat: 1.374880256, lng: 103.9344163 },], color: '#0000FF'} 
+  ];
 
+  useEffect(() => {
+    if (!map) return;
+
+    const createdPolylines = polylinePath.map(poly => {
+      const polyline = new google.maps.Polyline({
+          path: poly.path,
+          geodesic: true,
+          strokeColor: poly.color,
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+      });
+
+    polyline.setMap(map);
+
+    return polyline;
+    });
+
+    setPolylines(createdPolylines);
+
+    return () => {
+      // Remove all polylines from the map on cleanup
+      createdPolylines.forEach(polyline => polyline.setMap(null));
+    };
+  }, [map]);
+  
+
+  if (!leg) return null;
   
   return (
-  <div className="directions">
-    <h2>{selected.summary}</h2>
+    <div className="directions" style={{ padding: '10px', boxShadow: '0 2px 6px rgba(0,0,0,0.1)', backgroundColor: 'white', borderRadius: '8px', margin: '20px', maxWidth: '90vw', boxSizing: 'border-box' }}>
+    <h2 style={{ fontSize: '1.2rem' }}>{selected.summary}</h2>
     <p>
       {leg.start_address.split(",")[0]} to {leg.end_address.split(",")[0]}
     </p>
     <p>Distance: {leg.distance?.text}</p>
     <p>Duration: {leg.duration?.text}</p>
-
-    <h2>Other Routes</h2>
-    <ul>
-      {routes.map((route,index) => (
-      <li key={route.summary}>
-        <button onClick={() => setRouteIndex(index)}>{route.summary}</button>
+  
+    <h2 style={{ fontSize: '1rem' }}>Other Routes</h2>
+    <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+      {routes.map((route, index) => (
+        <li key={route.summary}>
+          <button onClick={() => setRouteIndex(index)} style={{ backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', padding: '10px 15px', margin: '5px', fontSize: '1rem', width: '100%', textAlign: 'left' }}>
+            {route.summary}
+          </button> 
         </li>
       ))}
     </ul>
@@ -123,7 +163,6 @@ function Directions() {
 const Markers = () => {
   return null
 }
-
 
 export function renderToDom(container: HTMLElement) {
   const root = createRoot(container);
