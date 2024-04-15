@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import { useState, useEffect, useRef } from "react"; 
 import { GoogleMap } from '@react-google-maps/api';
 import queryString from "query-string"
+import Poly from './googlemaps';
 
 import {
     APIProvider,
@@ -12,21 +13,23 @@ import {
 } from '@vis.gl/react-google-maps';
 
 export default function App() {
+  const mapRef = useRef(null);
   var tester=queryString.parse(window.location.search);
-  var tester2=JSON.parse(tester.body)
+  
   const position = { lat: 43.6532, lng: -79.3832 };
 
   return (
       <div style={{ width: '100vw', height: '100vh' }}>
+        <p>value:{tester.body}</p>
           <APIProvider apiKey={process.env.GOOGLE_MAPS_API_KEY}>
               <Map 
-                  
-                  
+                  ref={mapRef}
                   gestureHandling={'greedy'}
                   fullscreenControl = {false}
                   mapId={process.env.GOOGLE_MAP_ID}
               >
                 <Directions />
+                
               </Map>
           </APIProvider> 
       </div>
@@ -35,7 +38,24 @@ export default function App() {
 
 function Directions() {
   var tester=queryString.parse(window.location.search);
-  var tester2=JSON.parse(tester.body)
+  let origin, destination;
+
+  try {
+    
+    const points = tester.body ? JSON.parse(tester.body) : null;
+    if (points && Array.isArray(points) && points.length >= 2) {
+      origin = points[0]; 
+      destination = points[1]; 
+    } else {
+      throw new Error("Invalid or missing origin and destination points in the 'body' parameter.");
+    }
+  } catch (error) {
+    console.error("Failed to parse 'body' as JSON or invalid data format:", error);
+    
+    origin = "clarke Quay, Singapore";
+    destination = "SMU, Singapore"; 
+  }
+
   const map = useMap();
   const routesLibrary = useMapsLibrary("routes")
   const [directionsService, setDirectionsService] = 
@@ -58,8 +78,8 @@ function Directions() {
     if(!directionsService || !directionsRenderer) return;
 
     directionsService.route({
-      origin: tester2[0],
-      destination: tester2[1],
+      origin: origin,
+      destination: destination,
       travelMode: google.maps.TravelMode.DRIVING,
       provideRouteAlternatives: true,
     })
@@ -99,6 +119,11 @@ function Directions() {
   </div>
   );
 }
+
+const Markers = () => {
+  return null
+}
+
 
 export function renderToDom(container: HTMLElement) {
   const root = createRoot(container);
