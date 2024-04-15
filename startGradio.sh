@@ -2,5 +2,5 @@ cd ~/repos/why2/NNIC-Project
 
 screen -S vite -dm sh startVite.sh
 
-source config.env
+source .env
 ipython -c "%run main.ipynb"
