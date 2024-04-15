@@ -5,6 +5,7 @@ import { GoogleMap } from '@react-google-maps/api';
 import queryString from "query-string"
 import Poly from './googlemaps';
 import { useGoogleMap } from '@react-google-maps/api';
+import fs from 'fs'
 
 import {
     APIProvider,
@@ -12,6 +13,7 @@ import {
     useMapsLibrary,
     useMap
 } from '@vis.gl/react-google-maps';
+import { error } from 'console';
 
 export default function App() {
   const mapRef = useRef(null);
@@ -42,6 +44,7 @@ function Directions() {
   const [isMinimized, setIsMinimized] = useState(false);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
   const [polylines, setPolylines] = useState([]);
+  const [polylinePath,setPolylinePath]=useState([]);
 
   var tester=queryString.parse(window.location.search);
   let origin, destination;
@@ -109,14 +112,61 @@ function Directions() {
     directionsRenderer.setRouteIndex(routeIndex);
   }, [routeIndex, directionsRenderer])
   
-  const polylinePath = [
+  //var speedBandResponse=fetch('http://fuqianshan.asuscomm.com:5173/speedBand.json')
+  //var speedBandData=speedBandResponse.json()
+
+  /*const polylinePath = [
     {path:[
-    { lat: 1.350438529, lng: 103.6944089 },
-    { lat: 1.29779483, lng: 103.8986301 },], color: '#FF0000'},
-    {path:[ 
-    {lat: 1.29779483, lng: 103.8986301},
-    { lat: 1.374880256, lng: 103.9344163 },], color: '#0000FF'} 
-  ];
+      //{ lat: speedBandData.value[0].StartLat, lng: speedBandData.value[0].StartLon },
+      //{ lat: speedBandData.value[0].EndLat, lng: speedBandData.value[0].EndLon },
+      { lat: 1.350438529, lng: 103.6944089 },
+      { lat: 1.29779483, lng: 103.8986301 },
+    ], color: '#FF0000'},
+    {path:[
+      //{ lat: speedBandData.value[1].StartLat, lng: speedBandData.value[1].StartLon },
+      //{ lat: speedBandData.value[1].EndLat, lng: speedBandData.value[1].EndLon },
+      {lat: 1.29779483, lng: 103.8986301},
+      { lat: 1.374880256, lng: 103.9344163 },
+    ], color: '#0000FF'} 
+  ];*/
+  useEffect(()=>{
+    fetch('http://fuqianshan.asuscomm.com:5173/speedBand.json')
+      .then(response=>response.json())
+      .then(data=>{
+        /*var temper = [
+          {path:[
+            { lat: parseFloat(data.value[0].StartLat), lng: parseFloat(data.value[0].StartLon) },
+            { lat: parseFloat(data.value[0].EndLat), lng: parseFloat(data.value[0].EndLon) },
+            //{ lat: 1.350438529, lng: 103.6944089 },
+            //{ lat: 1.29779483, lng: 103.8986301 },
+          ], color: '#FF0000'},
+          {path:[
+            { lat: parseFloat(data.value[1].StartLat), lng: parseFloat(data.value[1].StartLon) },
+            { lat: parseFloat(data.value[1].EndLat), lng: parseFloat(data.value[1].EndLon) },
+            //{lat: 1.29779483, lng: 103.8986301},
+            //{ lat: 1.374880256, lng: 103.9344163 },
+          ], color: '#0000FF'} 
+        ]*/
+        var temper=new Array();
+        var colorSelector=['','#FF0000','#DF2000','#BF4000','#9F6000','#7F8000','#5FA000','#3FC000','#1FE000']
+        var counter=0
+        for(var i=0;i<data.value.length;i++){
+          if(data.value[i].RoadCategory=='A'||data.value[i].RoadCategory=='B'||data.value[i].RoadCategory=='C'){
+            temper[counter]={
+              path:[
+                { lat: parseFloat(data.value[i].StartLat), lng: parseFloat(data.value[i].StartLon) },
+                { lat: parseFloat(data.value[i].EndLat), lng: parseFloat(data.value[i].EndLon) },
+              ],
+              color:colorSelector[parseInt(data.value[i].SpeedBand)]
+            };
+            counter=counter+1;
+          }
+        }
+        console.log(data.value.length)
+        setPolylinePath(temper);
+      })
+      .catch(error=>console.error('Error:',error));
+  },[]);
 
   useEffect(() => {
     if (!map) return;
@@ -126,7 +176,7 @@ function Directions() {
           path: poly.path,
           geodesic: true,
           strokeColor: poly.color,
-          strokeOpacity: 1.0,
+          strokeOpacity: 0.35,
           strokeWeight: 2
       });
 
@@ -140,7 +190,7 @@ function Directions() {
     return () => {
       createdPolylines.forEach(polyline => polyline.setMap(null));
     };
-  }, [map]);
+  }, [map,polylinePath]);
   
 
   if (!leg) return null;
