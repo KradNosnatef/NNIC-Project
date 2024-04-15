@@ -6,14 +6,17 @@ if [ -z "$(git diff origin/main)" ]; then
 else
     echo "Changes detected, executing another script..."
 
-    git pull
-
     screen -S vite -X quit
     screen -S gradio -X quit
 
+    git pull
+
+    sleep 5
     screen -S vite -dm sh startVite.sh
+    sleep 1
     echo vite is running
 
     screen -S gradio -dm sh startGradio.sh
+    sleep 1
     echo gradio is running
 fi
