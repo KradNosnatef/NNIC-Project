@@ -12,6 +12,8 @@ else
     screen -S gradio -X quit
 
     screen -S vite -dm sh startVite.sh
+    echo vite is running
 
     screen -S gradio -dm sh startGradio.sh
+    echo gradio is running
 fi
