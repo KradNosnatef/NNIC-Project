@@ -9,14 +9,14 @@ else
     screen -S vite -X quit
     screen -S gradio -X quit
 
-    git pull
+    #git pull
 
     sleep 5
-    screen -S vite -dm sh startVite.sh
-    sleep 1
-    echo vite is running
-
     screen -S gradio -dm sh startGradio.sh
     sleep 1
     echo gradio is running
+
+    screen -S vite -dm sh startVite.sh
+    sleep 1
+    echo vite is running
 fi
