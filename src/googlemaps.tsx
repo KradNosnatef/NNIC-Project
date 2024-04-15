@@ -36,6 +36,7 @@ function Poly() {
         center={center}
         zoom={12}
         onLoad={map => mapRef.current = map}
+        mapTypeControl={false}
     >
         <Polyline
         path={path}
