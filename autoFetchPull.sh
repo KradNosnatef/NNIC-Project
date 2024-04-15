@@ -9,7 +9,7 @@ else
     screen -S vite -X quit
     screen -S gradio -X quit
 
-    #git pull
+    git pull
 
     sleep 5
     screen -S gradio -dm sh startGradio.sh
