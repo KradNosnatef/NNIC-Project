@@ -39,12 +39,22 @@ export default function App() {
 
 function Directions() {
   
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(true)
+  const [isMinimized, setIsMinimized] = useState(false);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
   const [polylines, setPolylines] = useState([]);
+
   var tester=queryString.parse(window.location.search);
   let origin, destination;
 
+  const toggleOpen = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const toggleMinimize = () => {
+    setIsMinimized(!isMinimized);
+  };
+  
   try {
     
     const points = tester.body ? JSON.parse(tester.body) : null;
@@ -129,35 +139,64 @@ function Directions() {
     setPolylines(createdPolylines);
 
     return () => {
-      // Remove all polylines from the map on cleanup
       createdPolylines.forEach(polyline => polyline.setMap(null));
     };
   }, [map]);
   
 
   if (!leg) return null;
+
+  if (!isOpen) return null;
   
   return (
-    <div className="directions" style={{ padding: '10px', boxShadow: '0 2px 6px rgba(0,0,0,0.1)', backgroundColor: 'white', borderRadius: '8px', margin: '20px', maxWidth: '90vw', boxSizing: 'border-box' }}>
-    <h2 style={{ fontSize: '1.2rem' }}>{selected.summary}</h2>
-    <p>
-      {leg.start_address.split(",")[0]} to {leg.end_address.split(",")[0]}
-    </p>
-    <p>Distance: {leg.distance?.text}</p>
-    <p>Duration: {leg.duration?.text}</p>
+    <div className="directions" style={{
+      padding: '10px',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+      backgroundColor: 'white',
+      borderRadius: '8px',
+      margin: '20px',
+      maxWidth: '90vw',
+      boxSizing: 'border-box'
+    }}>
+      <button onClick={toggleMinimize} style={{ fontSize: '1rem' }}>
+        {isMinimized ? 'Expand' : 'Minimize'}
+      </button>
+      {!isMinimized && (
+        <>
+          <h2 style={{ fontSize: '1.2rem' }}>
+            {routes[selectedRouteIndex].summary}
+          </h2>
+          <p>
+            {routes[selectedRouteIndex].legs[0].start_address.split(",")[0]} to 
+            {routes[selectedRouteIndex].legs[0].end_address.split(",")[0]}
+          </p>
+          <p>Distance: {routes[selectedRouteIndex].legs[0].distance?.text}</p>
+          <p>Duration: {routes[selectedRouteIndex].legs[0].duration?.text}</p>
   
-    <h2 style={{ fontSize: '1rem' }}>Other Routes</h2>
-    <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-      {routes.map((route, index) => (
-        <li key={route.summary}>
-          <button onClick={() => setRouteIndex(index)} style={{ backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', padding: '10px 15px', margin: '5px', fontSize: '1rem', width: '100%', textAlign: 'left' }}>
-            {route.summary}
-          </button> 
-        </li>
-      ))}
-    </ul>
-  </div>
-  );
+          <h2 style={{ fontSize: '1rem' }}>Other Routes</h2>
+          <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+            {routes.map((route, index) => (
+              <li key={route.summary}>
+                <button onClick={() => setRouteIndex(index)} style={{
+                  backgroundColor: '#007BFF',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  padding: '10px 15px',
+                  margin: '5px',
+                  fontSize: '1rem',
+                  width: '100%',
+                  textAlign: 'left'
+                }}>
+                  {route.summary}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  );  
 }
 
 const Markers = () => {
