@@ -21,7 +21,6 @@ export default function App() {
 
   return (
       <div style={{ width: '100vw', height: '100vh' }}>
-        <p>value:{tester.body}</p>
           <APIProvider apiKey={process.env.GOOGLE_MAPS_API_KEY}>
               <Map 
                   ref={mapRef}
