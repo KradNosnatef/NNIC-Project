@@ -61,8 +61,8 @@ function Directions() {
     
     const points = tester.body ? JSON.parse(tester.body) : null;
     if (points && Array.isArray(points) && points.length >= 2) {
-      origin = points[0]; 
-      destination = points[1]; 
+      origin = points[0];
+      destination = points[1];
     } else {
       throw new Error("Invalid or missing origin and destination points in the 'body' parameter.");
     }
@@ -70,12 +70,12 @@ function Directions() {
     console.error("Failed to parse 'body' as JSON or invalid data format:", error);
     
     origin = "clarke Quay, Singapore";
-    destination = "SMU, Singapore"; 
+    destination = "SMU, Singapore";
   }
 
   const map = useMap();
   const routesLibrary = useMapsLibrary("routes")
-  const [directionsService, setDirectionsService] = 
+  const [directionsService, setDirectionsService] =
     useState<google.maps.DirectionsService>();
   const [directionsRenderer, setDirectionsRenderer] = 
     useState<google.maps.DirectionsRenderer>();
@@ -86,8 +86,18 @@ function Directions() {
 
   useEffect(() => {
     if (!routesLibrary || !map) return;
-    setDirectionsService(new routesLibrary.DirectionsService());
-    setDirectionsRenderer(new routesLibrary.DirectionsRenderer({ map }));
+    const ds = new routesLibrary.DirectionsService();
+    const dr = new routesLibrary.DirectionsRenderer({
+      map: map,
+      polylineOptions: {
+        strokeColor: '#0000FF',
+        strokeOpacity: 0.8,
+        strokeWeight: 6
+      }
+    });
+
+    setDirectionsService(ds);
+    setDirectionsRenderer(dr);
   }, [routesLibrary, map]);
 
   useEffect(() => {
