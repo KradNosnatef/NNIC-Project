@@ -31,7 +31,7 @@ export default function App() {
                   mapId={process.env.GOOGLE_MAP_ID}
               >
                 <Directions />
-                
+                <MapLegend />
               </Map>
           </APIProvider> 
       </div>
@@ -69,7 +69,7 @@ function Directions() {
   } catch (error) {
     console.error("Failed to parse 'body' as JSON or invalid data format:", error);
     
-    origin = "clarke Quay, Singapore";
+    origin = "East coast park, Singapore";
     destination = "SMU, Singapore";
   }
 
@@ -223,14 +223,13 @@ function Directions() {
       {!isMinimized && (
         <>
           <h2 style={{ fontSize: '1.2rem' }}>
-            {routes[selectedRouteIndex].summary}
+            {selected.summary}
           </h2>
           <p>
-            {routes[selectedRouteIndex].legs[0].start_address.split(",")[0]} to 
-            {routes[selectedRouteIndex].legs[0].end_address.split(",")[0]}
+          {leg.start_address.split(",")[0]} to {leg.end_address.split(",")[0]}
           </p>
-          <p>Distance: {routes[selectedRouteIndex].legs[0].distance?.text}</p>
-          <p>Duration: {routes[selectedRouteIndex].legs[0].duration?.text}</p>
+          <p>Distance: {leg.distance?.text}</p>
+          <p>Duration: {leg.duration?.text}</p>
   
           <h2 style={{ fontSize: '1rem' }}>Other Routes</h2>
           <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
@@ -261,6 +260,25 @@ function Directions() {
 const Markers = () => {
   return null
 }
+
+function MapLegend() {
+  return (
+    <div style={{
+      position: 'absolute', 
+      bottom: '20px',
+      right: '20px',
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      padding: '10px',
+      borderRadius: '5px',
+      zIndex: 1000 
+    }}>
+      <h4>Speed Band</h4>
+      <div><span style={{ height: '10px', width: '20px', backgroundColor: '#1FE000', display: 'inline-block' }}></span> High Speed</div>
+      <div><span style={{ height: '10px', width: '20px', backgroundColor: '#FF0000', display: 'inline-block' }}></span> Low Speed</div>
+    </div>
+  );
+}
+
 
 export function renderToDom(container: HTMLElement) {
   const root = createRoot(container);
