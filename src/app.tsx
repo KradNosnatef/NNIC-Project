@@ -229,7 +229,7 @@ function Directions() {
           {leg.start_address.split(",")[0]} to {leg.end_address.split(",")[0]}
           </p>
           <p>Distance: {leg.distance?.text}</p>
-          <p>Duration: {leg.duration?.text}</p>
+          <p>Estimated Arrival Time: {leg.duration?.text}</p>
   
           <h2 style={{ fontSize: '1rem' }}>Other Routes</h2>
           <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
@@ -272,9 +272,9 @@ function MapLegend() {
       borderRadius: '5px',
       zIndex: 1000 
     }}>
-      <h4>Speed Band</h4>
-      <div><span style={{ height: '10px', width: '20px', backgroundColor: '#1FE000', display: 'inline-block' }}></span> High Speed</div>
-      <div><span style={{ height: '10px', width: '20px', backgroundColor: '#FF0000', display: 'inline-block' }}></span> Low Speed</div>
+      <h4>Traffic Conditions</h4>
+      <div><span style={{ height: '10px', width: '20px', backgroundColor: '#1FE000', display: 'inline-block' }}></span> Smooth Traffic</div>
+      <div><span style={{ height: '10px', width: '20px', backgroundColor: '#FF0000', display: 'inline-block' }}></span> Heavy Traffic</div>
     </div>
   );
 }
