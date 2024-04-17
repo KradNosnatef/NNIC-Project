@@ -77,8 +77,8 @@ function Directions() {
   } catch (error) {
     console.error("Failed to parse 'body' as JSON or invalid data format:", error);
     
-    origin = "East coast park, Singapore";
-    destination = "Woodlands, Singapore";
+    origin = "SMU, Singapore";
+    destination = "NUS, Singapore";
   }
 
   const map = useMap();
