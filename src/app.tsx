@@ -28,7 +28,7 @@ export default function App() {
                   ref={mapRef}
                   gestureHandling={'greedy'}
                   fullscreenControl = {false}
-                  mapId={process.env.GOOGLE_MAP_ID}
+                  mapId={process.env.GOOGLE_MAP_ID}           
               >
                 <Directions />
                 <MapLegend />
@@ -45,6 +45,12 @@ function Directions() {
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
   const [polylines, setPolylines] = useState([]);
   const [polylinePath,setPolylinePath]=useState([]);
+  const [departureTime, setDepartureTime] = useState(() => {
+    const now = new Date();
+    return new Date(now.getTime() + 8 * 3600 * 1000);
+  });
+  const [arrivalTime, setArrivalTime] = useState(null);
+
 
   var tester=queryString.parse(window.location.search);
   let origin, destination;
@@ -70,7 +76,7 @@ function Directions() {
     console.error("Failed to parse 'body' as JSON or invalid data format:", error);
     
     origin = "East coast park, Singapore";
-    destination = "SMU, Singapore";
+    destination = "Woodlands, Singapore";
   }
 
   const map = useMap();
@@ -82,7 +88,7 @@ function Directions() {
   const [routes, setRoutes] = useState<google.maps.DirectionsRoute[]>([]);
   const [routeIndex, setRouteIndex] = useState(0);
   const selected = routes[routeIndex];
-  const leg = selected?.legs[0];
+  
   const trafficLayerRef = useRef(null);
   
 
@@ -113,26 +119,54 @@ function Directions() {
   }, [map]);
 
   useEffect(() => {
-    if(!directionsService || !directionsRenderer) return;
+    if(!directionsService || !directionsRenderer || !departureTime) return;
 
     directionsService.route({
       origin: origin,
       destination: destination,
       travelMode: google.maps.TravelMode.DRIVING,
+      drivingOptions: {
+        departureTime: departureTime,
+        trafficModel: 'pessimistic'
+      },
       provideRouteAlternatives: true,
     })
     .then(response => {
       directionsRenderer.setDirections(response);
       setRoutes(response.routes);
-  });
-  }, [directionsService, directionsRenderer]);
+      if (response.routes.length > 0) {
+        const durationInSeconds = response.routes[0].legs[0].duration.value;
+        const estimatedArrival = new Date(departureTime.getTime() + durationInSeconds * 1000);
+        setArrivalTime(estimatedArrival);
+    }
+});
+}, [directionsService, directionsRenderer, departureTime]);
+  
+
   
 
   useEffect(() => {
-    if(!directionsRenderer) return;
+    if (routes.length > 0 && routes[selectedRouteIndex]) {
+      const durationInSeconds = routes[selectedRouteIndex].legs[0].duration.value;
+      const estimatedArrival = new Date(departureTime.getTime() + durationInSeconds * 1000);
+      setArrivalTime(estimatedArrival);
+    }
+  }, [selectedRouteIndex, routes, departureTime]);
+  
+  const handleRouteChange = (index) => {
+    setSelectedRouteIndex(index);
+    // Calculate new estimated arrival time
+    const selectedRoute = routes[index];
+    const durationInSeconds = selectedRoute.legs[0].duration.value;
+    const estimatedArrival = new Date(departureTime.getTime() + durationInSeconds * 1000);
+    setArrivalTime(estimatedArrival);
+  };
 
-    directionsRenderer.setRouteIndex(routeIndex);
-  }, [routeIndex, directionsRenderer])
+  useEffect(() => {
+    if (directionsRenderer) {
+      directionsRenderer.setRouteIndex(selectedRouteIndex);
+    }
+  }, [selectedRouteIndex, directionsRenderer, routes]);
   
   //var speedBandResponse=fetch('http://fuqianshan.asuscomm.com:5173/speedBand.json')
   //var speedBandData=speedBandResponse.json()
@@ -151,31 +185,32 @@ function Directions() {
       { lat: 1.374880256, lng: 103.9344163 },
     ], color: '#0000FF'} 
   ];*/
+  const toSingaporeTimeString = (date) => {
+    // Format date as local time, slicing to fit 'datetime-local' input without seconds
+    return new Date(date.getTime() - (date.getTimezoneOffset() * 60000))
+      .toISOString()
+      .slice(0, 16);
+  };
 
-  useEffect(() => {
-    if (!map) return;
 
-    const createdPolylines = polylinePath.map(poly => {
-      const polyline = new google.maps.Polyline({
-          path: poly.path,
-          geodesic: true,
-          strokeColor: poly.color,
-          strokeOpacity: 0.35,
-          strokeWeight: 2
-      });
-
-    polyline.setMap(map);
-
-    return polyline;
-    });
-
-    setPolylines(createdPolylines);
-
-    return () => {
-      createdPolylines.forEach(polyline => polyline.setMap(null));
-    };
-  }, [map,polylinePath]);
   
+  const handleDateChange = (event) => {  
+    const localDate = new Date(event.target.value);
+    const utcDate = new Date(localDate.getTime() + (localDate.getTimezoneOffset() * 60000));
+    const sgDate = new Date(utcDate.getTime() + 8 * 3600 * 1000);
+    setDepartureTime(sgDate);
+  };
+
+  const displayArrivalTime = () => {
+    return arrivalTime ? arrivalTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+    }) : 'Calculating...';
+};
+  
+  const selectedRoute = routes[selectedRouteIndex];
+  const leg = selectedRoute ? selectedRoute.legs[0] : null;
 
   if (!leg) return null;
 
@@ -197,19 +232,28 @@ function Directions() {
       {!isMinimized && (
         <>
           <h2 style={{ fontSize: '1.2rem' }}>
-            {selected.summary}
+            {routes[selectedRouteIndex]?.summary}
           </h2>
           <p>
           {leg.start_address.split(",")[0]} to {leg.end_address.split(",")[0]}
           </p>
           <p>Distance: {leg.distance?.text}</p>
-          <p>Estimated Arrival Time: {leg.duration?.text}</p>
+          <p>Estimated Arrival Time: {displayArrivalTime()}</p>
+
+          <div style={{ margin: '10px 0' }}>
+            <label>Departure Time: </label>
+            <input
+              type="datetime-local"
+              value={toSingaporeTimeString(departureTime)}
+              onChange={handleDateChange}
+            />
+          </div>
   
           <h2 style={{ fontSize: '1rem' }}>Other Routes</h2>
           <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
             {routes.map((route, index) => (
               <li key={route.summary}>
-                <button onClick={() => setRouteIndex(index)} style={{
+                <button onClick={() => handleRouteChange(index)} style={{
                   backgroundColor: '#007BFF',
                   color: 'white',
                   border: 'none',
