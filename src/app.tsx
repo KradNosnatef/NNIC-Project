@@ -229,7 +229,7 @@ function Directions() {
       boxSizing: 'border-box'
     }}>
       <button onClick={toggleMinimize} style={{ fontSize: '1rem' }}>
-        {isMinimized ? 'Expand' : 'Minimize'}
+        {isMinimized ? 'Expand Legend' : 'Minimize'}
       </button>
       {!isMinimized && (
         <>
