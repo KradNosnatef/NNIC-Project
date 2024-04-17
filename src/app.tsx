@@ -83,6 +83,8 @@ function Directions() {
   const [routeIndex, setRouteIndex] = useState(0);
   const selected = routes[routeIndex];
   const leg = selected?.legs[0];
+  const trafficLayerRef = useRef(null);
+  
 
   useEffect(() => {
     if (!routesLibrary || !map) return;
@@ -98,7 +100,17 @@ function Directions() {
 
     setDirectionsService(ds);
     setDirectionsRenderer(dr);
+
+    const trafficLayer = new google.maps.TrafficLayer();
+    trafficLayer.setMap(map);
+    trafficLayerRef.current = trafficLayer;
   }, [routesLibrary, map]);
+
+  useEffect(() => {
+    if (trafficLayerRef.current) {
+      trafficLayerRef.current.setMap(map);
+    }
+  }, [map]);
 
   useEffect(() => {
     if(!directionsService || !directionsRenderer) return;
@@ -139,44 +151,6 @@ function Directions() {
       { lat: 1.374880256, lng: 103.9344163 },
     ], color: '#0000FF'} 
   ];*/
-  useEffect(()=>{
-    fetch('http://fuqianshan.asuscomm.com:5173/speedBand.json')
-      .then(response=>response.json())
-      .then(data=>{
-        /*var temper = [
-          {path:[
-            { lat: parseFloat(data.value[0].StartLat), lng: parseFloat(data.value[0].StartLon) },
-            { lat: parseFloat(data.value[0].EndLat), lng: parseFloat(data.value[0].EndLon) },
-            //{ lat: 1.350438529, lng: 103.6944089 },
-            //{ lat: 1.29779483, lng: 103.8986301 },
-          ], color: '#FF0000'},
-          {path:[
-            { lat: parseFloat(data.value[1].StartLat), lng: parseFloat(data.value[1].StartLon) },
-            { lat: parseFloat(data.value[1].EndLat), lng: parseFloat(data.value[1].EndLon) },
-            //{lat: 1.29779483, lng: 103.8986301},
-            //{ lat: 1.374880256, lng: 103.9344163 },
-          ], color: '#0000FF'} 
-        ]*/
-        var temper=new Array();
-        var colorSelector=['','#FF0000','#DF2000','#BF4000','#9F6000','#7F8000','#5FA000','#3FC000','#1FE000']
-        var counter=0
-        for(var i=0;i<data.value.length;i++){
-          if(data.value[i].RoadCategory=='A'||data.value[i].RoadCategory=='B'||data.value[i].RoadCategory=='C'){
-            temper[counter]={
-              path:[
-                { lat: parseFloat(data.value[i].StartLat), lng: parseFloat(data.value[i].StartLon) },
-                { lat: parseFloat(data.value[i].EndLat), lng: parseFloat(data.value[i].EndLon) },
-              ],
-              color:colorSelector[parseInt(data.value[i].SpeedBand)]
-            };
-            counter=counter+1;
-          }
-        }
-        console.log(data.value.length)
-        setPolylinePath(temper);
-      })
-      .catch(error=>console.error('Error:',error));
-  },[]);
 
   useEffect(() => {
     if (!map) return;
@@ -273,8 +247,9 @@ function MapLegend() {
       zIndex: 1000 
     }}>
       <h4>Traffic Conditions</h4>
-      <div><span style={{ height: '10px', width: '20px', backgroundColor: '#1FE000', display: 'inline-block' }}></span> Smooth Traffic</div>
-      <div><span style={{ height: '10px', width: '20px', backgroundColor: '#FF0000', display: 'inline-block' }}></span> Heavy Traffic</div>
+      <div><span style={{ display: 'inline-block', width: '20px', height: '10px', backgroundColor: '#28a745' }}></span> Smooth Traffic</div>
+        <div><span style={{ display: 'inline-block', width: '20px', height: '10px', backgroundColor: '#ffc107' }}></span> Slow moving</div>
+        <div><span style={{ display: 'inline-block', width: '20px', height: '10px', backgroundColor: '#dc3545' }}></span> Traffic jams</div>
     </div>
   );
 }
