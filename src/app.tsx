@@ -39,9 +39,9 @@ export default function App() {
 }
 
 function Directions() {
-  
+  const [isMinimized, setIsMinimized] = useState(window.innerWidth < 768);
   const [isOpen, setIsOpen] = useState(true)
-  const [isMinimized, setIsMinimized] = useState(false);
+  
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
   const [polylines, setPolylines] = useState([]);
   const [polylinePath,setPolylinePath]=useState([]);
