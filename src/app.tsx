@@ -47,7 +47,9 @@ function Directions() {
   const [polylinePath,setPolylinePath]=useState([]);
   const [departureTime, setDepartureTime] = useState(() => {
     const now = new Date();
-    return new Date(now.getTime() + 8 * 3600 * 1000);
+    const utcOffset = now.getTimezoneOffset() * 60000; // Convert offset to milliseconds
+    const sgTime = new Date(now.getTime() + utcOffset + (8 * 3600 * 1000)); // Convert to Singapore time
+    return sgTime;
   });
   const [arrivalTime, setArrivalTime] = useState(null);
 
