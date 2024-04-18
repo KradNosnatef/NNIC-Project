@@ -226,7 +226,9 @@ function Directions() {
       borderRadius: '8px',
       margin: '20px',
       maxWidth: '90vw',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      position: 'absolute',
+      zIndex: 1001
     }}>
       <button onClick={toggleMinimize} style={{ fontSize: '1rem' }}>
         {isMinimized ? 'Expand Legend' : 'Minimize'}
